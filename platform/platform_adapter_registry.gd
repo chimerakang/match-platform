@@ -21,6 +21,7 @@ extends RefCounted
 ## and `docs/match-platform-core.md` for how the core consumes this.
 
 const V3 = preload("res://platform/match_platform_v3.gd")
+const LocalRuntime = preload("res://platform/in_process_runtime.gd")
 
 ## Platform envelope versions this build speaks, newest first. Negotiation picks the
 ## highest value shared with the client (`unsupported_protocol` when disjoint). This
@@ -35,7 +36,7 @@ const REQUIRED_DESCRIPTOR_FIELDS: Array[String] = [
 	"codec_ids", "tick_rate",
 ]
 
-## game_id -> {adapter: Object, descriptor: Dictionary}. Registration order is kept
+## game_id -> {runtime: AdapterRuntime, descriptor: Dictionary}. Registration order is kept
 ## separately so listings are deterministic (the core must never depend on Dictionary
 ## iteration order for anything observable).
 var _packages: Dictionary = {}
@@ -47,18 +48,29 @@ var _order: Array[String] = []
 ## `{ok: true, game_id}`, or a reject envelope when the descriptor is unusable or the
 ## id is already taken. Registration is a server-startup action, not a client path.
 func register(adapter: Object) -> Dictionary:
-	if adapter == null or not adapter.has_method("package_descriptor"):
-		return V3.reject(V3.REJECT_ADAPTER_REJECTED, "adapter does not expose package_descriptor()")
-	var descriptor: Variant = adapter.package_descriptor()
+	if adapter == null:
+		return V3.reject(V3.REJECT_ADAPTER_REJECTED, "adapter is null")
+	return register_runtime(LocalRuntime.new(adapter))
+
+## Register any runtime that implements the common call/result contract. Descriptor
+## discovery is itself a runtime call; registration refuses a pending or failed call
+## rather than branching on the concrete runtime implementation.
+func register_runtime(runtime: AdapterRuntime) -> Dictionary:
+	if runtime == null:
+		return V3.reject(V3.REJECT_ADAPTER_REJECTED, "runtime is null")
+	var descriptor: Variant = _runtime_value(runtime.package_descriptor(), null)
 	if not descriptor is Dictionary:
-		return V3.reject(V3.REJECT_ADAPTER_REJECTED, "package_descriptor() must return a Dictionary")
+		return V3.reject(V3.REJECT_ADAPTER_REJECTED, "runtime package descriptor unavailable")
 	var check := validate_descriptor(descriptor)
 	if not bool(check.get("ok", false)):
 		return check
 	var game_id := String((descriptor as Dictionary)["game_id"])
 	if _packages.has(game_id):
 		return V3.reject(V3.REJECT_ADAPTER_REJECTED, "game_id already registered: %s" % game_id)
-	_packages[game_id] = {"adapter": adapter, "descriptor": (descriptor as Dictionary).duplicate(true)}
+	_packages[game_id] = {
+		"runtime": runtime,
+		"descriptor": (descriptor as Dictionary).duplicate(true),
+	}
 	_order.append(game_id)
 	return {"ok": true, "game_id": game_id}
 
@@ -94,20 +106,20 @@ func descriptor(game_id: String) -> Dictionary:
 		return {}
 	return (_packages[game_id].descriptor as Dictionary).duplicate(true)
 
-## The trusted adapter object, or `null`. Only the core's match factory and the
-## per-match seam should hold this.
-func adapter_for(game_id: String) -> Object:
+## The execution boundary for a package, or `null`.
+func runtime_for(game_id: String) -> AdapterRuntime:
 	if not _packages.has(game_id):
 		return null
-	return _packages[game_id].adapter
+	return _packages[game_id].runtime
 
 ## Slot/role descriptors as the adapter declares them — opaque to the core, which
 ## reads only counts and availability from them (never a seat name).
 func slot_descriptors(game_id: String) -> Array:
-	var adapter := adapter_for(game_id)
-	if adapter == null or not adapter.has_method("slot_descriptors"):
+	var runtime := runtime_for(game_id)
+	if runtime == null:
 		return []
-	return adapter.slot_descriptors()
+	var value: Variant = _runtime_value(runtime.slot_descriptors(), [])
+	return value if value is Array else []
 
 # --- Pre-seat identity gate -------------------------------------------------
 
@@ -185,13 +197,13 @@ func welcome_for(hello: Dictionary, capabilities: Dictionary = {}) -> Dictionary
 ## A deterministic `seed` is mandatory — the #36 determinism contract has no
 ## seedless match, and the core must not invent one from wall-clock.
 func create_match(game_id: String, config: Dictionary, match_seed: int) -> Dictionary:
-	var adapter := adapter_for(game_id)
-	if adapter == null:
+	var runtime := runtime_for(game_id)
+	if runtime == null:
 		return V3.reject(V3.REJECT_UNKNOWN_GAME, "no registered package for game_id")
-	var validated: Variant = adapter.validate_match_config(config)
+	var validated: Variant = _runtime_value(runtime.validate_match_config(config), null)
 	if not (validated is Dictionary and bool((validated as Dictionary).get("ok", false))):
 		return _as_reject(validated, "validate_match_config refused the configuration")
-	var created: Variant = adapter.create_match(config, match_seed)
+	var created: Variant = _runtime_value(runtime.create_match(config, match_seed), null)
 	if not (created is Dictionary and bool((created as Dictionary).get("ok", false))):
 		return _as_reject(created, "create_match refused the configuration")
 	return created
@@ -199,10 +211,10 @@ func create_match(game_id: String, config: Dictionary, match_seed: int) -> Dicti
 ## Recover a match from an acknowledged checkpoint payload. V3.0 promises in-process
 ## recovery only (ADR 0003 §Scope); the durable match store is #78.
 func recover_match(game_id: String, checkpoint_payload: Variant) -> Dictionary:
-	var adapter := adapter_for(game_id)
-	if adapter == null:
+	var runtime := runtime_for(game_id)
+	if runtime == null:
 		return V3.reject(V3.REJECT_UNKNOWN_GAME, "no registered package for game_id")
-	var recovered: Variant = adapter.recover_match(checkpoint_payload)
+	var recovered: Variant = _runtime_value(runtime.recover_match(checkpoint_payload), null)
 	if not (recovered is Dictionary and bool((recovered as Dictionary).get("ok", false))):
 		return _as_reject(recovered, "recover_match refused the checkpoint")
 	return recovered
@@ -216,6 +228,17 @@ static func _as_reject(value: Variant, fallback_detail: String) -> Dictionary:
 	if value is Dictionary and (value as Dictionary).has("code"):
 		return value
 	return V3.reject(V3.REJECT_ADAPTER_REJECTED, fallback_detail)
+
+## Extract an adapter-owned value from a completed runtime call. Existing synchronous
+## registry APIs remain compatible for the local runtime; execution owners use the
+## AdapterRuntimeCall directly when a future runtime completes asynchronously.
+static func _runtime_value(runtime_call: AdapterRuntimeCall, fallback: Variant) -> Variant:
+	if runtime_call == null:
+		return fallback
+	var result := runtime_call.result_now()
+	if not bool(result.get("ok", false)):
+		return fallback
+	return result.get("value", fallback)
 
 static func _refuse(code: StringName, detail: String) -> Dictionary:
 	return {"ok": false, "code": String(code), "detail": detail}
