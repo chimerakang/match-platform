@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "protocol_major": 1,
+  "cases": [
+    {
+      "name": "negotiate_v1",
+      "message_type": "NegotiateRequest",
+      "canonical_hex": "0a0d706c6174666f726d2d636f7265120208011a190a1564656475706c69636174655f6d75746174696f6e731001",
+      "json": {
+        "client_name": "platform-core",
+        "supported_protocols": [
+          {
+            "major": 1
+          }
+        ],
+        "capabilities": [
+          {
+            "name": "deduplicate_mutations",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "negotiate_unknown_major",
+      "message_type": "NegotiateRequest",
+      "canonical_hex": "0a0b6675747572652d636f726512020809",
+      "expected_status": "STATUS_UNSUPPORTED_PROTOCOL",
+      "json": {
+        "client_name": "future-core",
+        "supported_protocols": [
+          {
+            "major": 9
+          }
+        ]
+      }
+    },
+    {
+      "name": "create_match",
+      "message_type": "CreateMatchRequest",
+      "canonical_hex": "0a250a02080112096d617463682d3030311a09616461707465722d61200328293080f0cc86a63712230a1067726964776172732e6a736f6e2e7631120f7b226d6f6465223a226475656c227d1915cd5b0700000000",
+      "json": {
+        "context": {
+          "protocol": {
+            "major": 1
+          },
+          "match_id": "match-001",
+          "adapter_instance_id": "adapter-a",
+          "adapter_epoch": "3",
+          "request_id": "41",
+          "deadline_unix_ms": "1900000000000"
+        },
+        "config": {
+          "codec_id": "gridwars.json.v1",
+          "value": "eyJtb2RlIjoiZHVlbCJ9"
+        },
+        "seed": "123456789"
+      }
+    },
+    {
+      "name": "checkpoint",
+      "message_type": "CheckpointResponse",
+      "canonical_hex": "0a130801202c28783209616461707465722d61380312180a1067726964776172732e6a736f6e2e76311204000102ff1a0861306231633264332078",
+      "json": {
+        "meta": {
+          "code": "STATUS_OK",
+          "request_id": "44",
+          "observed_tick": "120",
+          "adapter_instance_id": "adapter-a",
+          "adapter_epoch": "3"
+        },
+        "payload": {
+          "codec_id": "gridwars.json.v1",
+          "value": "AAEC/w=="
+        },
+        "state_hash": "a0b1c2d3",
+        "tick": "120"
+      }
+    }
+  ]
+}
