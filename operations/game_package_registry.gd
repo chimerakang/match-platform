@@ -7,6 +7,7 @@ extends RefCounted
 
 const V3 = preload("res://platform/match_platform_v3.gd")
 const RuntimeRegistry = preload("res://platform/platform_adapter_registry.gd")
+const LocalRuntime = preload("res://platform/in_process_runtime.gd")
 
 var _packages: Dictionary = {}
 var _active: Dictionary = {}
@@ -30,6 +31,7 @@ func register(adapter: Object, activate_now := true) -> Dictionary:
 		return V3.reject(V3.REJECT_ADAPTER_REJECTED, "package version already registered")
 	versions[version] = {
 		"adapter": adapter,
+		"runtime": LocalRuntime.new(adapter, "%s:%s" % [game_id, version]),
 		"descriptor": (descriptor as Dictionary).duplicate(true),
 	}
 	_packages[game_id] = versions
@@ -106,6 +108,12 @@ func adapter_for(game_id: String) -> Object:
 	return _packages[game_id][_active[game_id]].adapter
 
 
+func runtime_for(game_id: String) -> AdapterRuntime:
+	if not has_game(game_id):
+		return null
+	return _packages[game_id][_active[game_id]].runtime
+
+
 func descriptor(game_id: String) -> Dictionary:
 	if not has_game(game_id):
 		return {}
@@ -113,8 +121,12 @@ func descriptor(game_id: String) -> Dictionary:
 
 
 func slot_descriptors(game_id: String) -> Array:
-	var adapter := adapter_for(game_id)
-	return adapter.slot_descriptors() if adapter != null else []
+	var runtime := runtime_for(game_id)
+	if runtime == null:
+		return []
+	var result := runtime.slot_descriptors().result_now()
+	var value: Variant = result.get("value", [])
+	return value if bool(result.get("ok", false)) and value is Array else []
 
 
 func registered_game_ids() -> Array[String]:
@@ -162,7 +174,7 @@ func inventory() -> Array[Dictionary]:
 func _runtime_registry() -> PlatformAdapterRegistry:
 	var runtime := RuntimeRegistry.new()
 	for game_id: String in _order:
-		var adapter := adapter_for(game_id)
-		if adapter != null:
-			runtime.register(adapter)
+		var package_runtime := runtime_for(game_id)
+		if package_runtime != null:
+			runtime.register_runtime(package_runtime)
 	return runtime
