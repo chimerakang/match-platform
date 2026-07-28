@@ -1,0 +1,303 @@
+syntax = "proto3";
+
+package hersir.adapter.rpc.v1;
+
+option go_package = "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1;adapterv1";
+
+// Adapter RPC is the language-neutral process boundary for MatchGameAdapter.
+// Game configuration, commands, state, events, results and replay remain opaque bytes.
+service AdapterService {
+  rpc Negotiate(NegotiateRequest) returns (NegotiateResponse);
+  rpc GetDescriptor(GetDescriptorRequest) returns (GetDescriptorResponse);
+  rpc GetSlotDescriptors(GetSlotDescriptorsRequest) returns (GetSlotDescriptorsResponse);
+  rpc ValidateMatchConfig(ValidateMatchConfigRequest) returns (StatusResponse);
+  rpc CreateMatch(CreateMatchRequest) returns (MatchResponse);
+  rpc RecoverMatch(RecoverMatchRequest) returns (MatchResponse);
+  rpc ValidateJoin(ValidateJoinRequest) returns (ValidateJoinResponse);
+  rpc ValidateCommand(ValidateCommandRequest) returns (StatusResponse);
+  rpc ApplyCommand(ApplyCommandRequest) returns (StatusResponse);
+  rpc Advance(AdvanceRequest) returns (AdvanceResponse);
+  rpc GetTerminalResult(GetTerminalResultRequest) returns (OpaqueResponse);
+  rpc GetStateHash(GetStateHashRequest) returns (StateHashResponse);
+  rpc ExportReplay(ExportReplayRequest) returns (OpaqueResponse);
+  rpc BuildCheckpoint(BuildCheckpointRequest) returns (CheckpointResponse);
+  rpc BuildDelta(BuildDeltaRequest) returns (DeltaResponse);
+  rpc DrainEvents(DrainEventsRequest) returns (DrainEventsResponse);
+  rpc GetMetrics(GetMetricsRequest) returns (MetricsResponse);
+  rpc Health(HealthRequest) returns (HealthResponse);
+}
+
+message ProtocolVersion {
+  uint32 major = 1;
+  uint32 minor = 2;
+}
+
+message Capability {
+  string name = 1;
+  uint32 version = 2;
+}
+
+message Limits {
+  uint64 max_request_bytes = 1;
+  uint64 max_response_bytes = 2;
+  uint64 max_opaque_payload_bytes = 3;
+  uint32 max_advance_ticks = 4;
+  uint32 max_events_per_drain = 5;
+}
+
+enum StatusCode {
+  STATUS_CODE_UNSPECIFIED = 0;
+  STATUS_OK = 1;
+  STATUS_INVALID_ARGUMENT = 2;
+  STATUS_NOT_FOUND = 3;
+  STATUS_ALREADY_EXISTS = 4;
+  STATUS_ADAPTER_REJECTED = 5;
+  STATUS_UNSUPPORTED_PROTOCOL = 6;
+  STATUS_UNSUPPORTED_CAPABILITY = 7;
+  STATUS_STALE_EPOCH = 8;
+  STATUS_OUT_OF_ORDER = 9;
+  STATUS_DEADLINE_EXCEEDED = 10;
+  STATUS_CANCELLED = 11;
+  STATUS_UNKNOWN_OUTCOME = 12;
+  STATUS_PAYLOAD_TOO_LARGE = 13;
+  STATUS_RESOURCE_EXHAUSTED = 14;
+  STATUS_UNAVAILABLE = 15;
+  STATUS_INTERNAL = 16;
+}
+
+message ResponseMeta {
+  StatusCode code = 1;
+  string detail = 2;
+  bool retryable = 3;
+  uint64 request_id = 4;
+  uint64 observed_tick = 5;
+  string adapter_instance_id = 6;
+  uint64 adapter_epoch = 7;
+}
+
+// Every match-scoped request carries the identity and ordering tuple. request_id is
+// strictly monotonic within (match_id, adapter_instance_id, adapter_epoch).
+message RequestContext {
+  ProtocolVersion protocol = 1;
+  string match_id = 2;
+  string adapter_instance_id = 3;
+  uint64 adapter_epoch = 4;
+  uint64 request_id = 5;
+  uint64 deadline_unix_ms = 6;
+  uint64 expected_tick = 7;
+}
+
+message OpaquePayload {
+  string codec_id = 1;
+  bytes value = 2;
+}
+
+message NegotiateRequest {
+  string client_name = 1;
+  repeated ProtocolVersion supported_protocols = 2;
+  repeated Capability capabilities = 3;
+}
+
+message NegotiateResponse {
+  ResponseMeta meta = 1;
+  ProtocolVersion selected_protocol = 2;
+  repeated Capability capabilities = 3;
+  Limits limits = 4;
+}
+
+message GetDescriptorRequest {
+  ProtocolVersion protocol = 1;
+  uint64 request_id = 2;
+  uint64 deadline_unix_ms = 3;
+}
+
+message PackageDescriptor {
+  string game_id = 1;
+  string adapter_version = 2;
+  repeated string content_versions = 3;
+  repeated string content_hashes = 4;
+  repeated string codec_ids = 5;
+  OpaquePayload slot_policy = 6;
+  uint32 tick_rate = 7;
+  repeated Capability capabilities = 8;
+}
+
+message GetDescriptorResponse {
+  ResponseMeta meta = 1;
+  PackageDescriptor descriptor = 2;
+}
+
+message GetSlotDescriptorsRequest {
+  ProtocolVersion protocol = 1;
+  uint64 request_id = 2;
+  uint64 deadline_unix_ms = 3;
+}
+
+message GetSlotDescriptorsResponse {
+  ResponseMeta meta = 1;
+  repeated OpaquePayload slots = 2;
+}
+
+message ValidateMatchConfigRequest {
+  ProtocolVersion protocol = 1;
+  uint64 request_id = 2;
+  uint64 deadline_unix_ms = 3;
+  OpaquePayload config = 4;
+}
+
+message CreateMatchRequest {
+  RequestContext context = 1;
+  OpaquePayload config = 2;
+  fixed64 seed = 3;
+}
+
+message RecoverMatchRequest {
+  RequestContext context = 1;
+  OpaquePayload checkpoint = 2;
+}
+
+message MatchResponse {
+  ResponseMeta meta = 1;
+  string match_id = 2;
+}
+
+message ValidateJoinRequest {
+  RequestContext context = 1;
+  string role = 2;
+  OpaquePayload requested_slot = 3;
+  OpaquePayload auth_context = 4;
+}
+
+message ValidateJoinResponse {
+  ResponseMeta meta = 1;
+  OpaquePayload assigned_slot = 2;
+}
+
+message ValidateCommandRequest {
+  RequestContext context = 1;
+  OpaquePayload slot = 2;
+  OpaquePayload command = 3;
+}
+
+message ApplyCommandRequest {
+  RequestContext context = 1;
+  OpaquePayload slot = 2;
+  OpaquePayload command = 3;
+}
+
+message StatusResponse {
+  ResponseMeta meta = 1;
+}
+
+message AdvanceRequest {
+  RequestContext context = 1;
+  uint32 ticks = 2;
+}
+
+message AdvanceResponse {
+  ResponseMeta meta = 1;
+  uint64 tick = 2;
+}
+
+message GetTerminalResultRequest {
+  RequestContext context = 1;
+}
+
+message GetStateHashRequest {
+  RequestContext context = 1;
+}
+
+message ExportReplayRequest {
+  RequestContext context = 1;
+}
+
+message OpaqueResponse {
+  ResponseMeta meta = 1;
+  bool present = 2;
+  OpaquePayload payload = 3;
+}
+
+message StateHashResponse {
+  ResponseMeta meta = 1;
+  string state_hash = 2;
+  uint64 tick = 3;
+}
+
+message BuildCheckpointRequest {
+  RequestContext context = 1;
+  string codec_id = 2;
+}
+
+message CheckpointResponse {
+  ResponseMeta meta = 1;
+  OpaquePayload payload = 2;
+  string state_hash = 3;
+  uint64 tick = 4;
+}
+
+message BuildDeltaRequest {
+  RequestContext context = 1;
+  uint64 from_ack_tick = 2;
+  string codec_id = 3;
+}
+
+message DeltaResponse {
+  ResponseMeta meta = 1;
+  OpaquePayload payload = 2;
+  uint64 tick = 3;
+  uint64 base_tick = 4;
+}
+
+enum Reliability {
+  RELIABILITY_UNSPECIFIED = 0;
+  RELIABILITY_RELIABLE = 1;
+  RELIABILITY_REPLACEABLE = 2;
+  RELIABILITY_DROPPABLE = 3;
+}
+
+message AdapterEvent {
+  Reliability reliability = 1;
+  OpaquePayload payload = 2;
+}
+
+message DrainEventsRequest {
+  RequestContext context = 1;
+  string codec_id = 2;
+  uint32 max_events = 3;
+}
+
+message DrainEventsResponse {
+  ResponseMeta meta = 1;
+  repeated AdapterEvent events = 2;
+}
+
+message Metric {
+  string name = 1;
+  double value = 2;
+}
+
+message GetMetricsRequest {
+  RequestContext context = 1;
+}
+
+message MetricsResponse {
+  ResponseMeta meta = 1;
+  repeated Metric metrics = 2;
+}
+
+message HealthRequest {
+  ProtocolVersion protocol = 1;
+  uint64 request_id = 2;
+  uint64 deadline_unix_ms = 3;
+}
+
+enum ServingStatus {
+  SERVING_STATUS_UNSPECIFIED = 0;
+  SERVING = 1;
+  NOT_SERVING = 2;
+}
+
+message HealthResponse {
+  ResponseMeta meta = 1;
+  ServingStatus status = 2;
+}
