@@ -11,7 +11,7 @@ extends RefCounted
 ## validate/build them; it never branches on game concepts itself (#73 boundary).
 ##
 ## This is an abstract base: every method returns a not-implemented rejection so a
-## concrete adapter (the Hersir adapter is #75) must override the full surface.
+## concrete adapter (the Hersir adapter is #76) must override the full surface.
 ## The signatures ARE the frozen contract; ADR 0003 is their prose. Payloads and
 ## returned game data are opaque to the platform — typed here as `Variant`/
 ## `Dictionary` deliberately, so no Hersir field name leaks into the interface.
