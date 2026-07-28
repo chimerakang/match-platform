@@ -31,9 +31,8 @@ const ENVELOPE_VERSION := 3
 const MAX_ENVELOPE_BYTES := 64 * 1024
 
 # --- Message types ----------------------------------------------------------
-# The seven generic envelopes from #73. Direction is fixed: hello/join/command
-# are client→server; welcome/state/checkpoint/event are server→client. `reject`
-# is the structured server→client refusal that carries a stable code.
+# The game envelopes from #73 plus the generic #79 transport-control extension.
+# RTC signaling is platform-owned and carries no game payload fields.
 
 const HELLO := &"hello"
 const WELCOME := &"welcome"
@@ -43,9 +42,18 @@ const STATE := &"state"
 const CHECKPOINT := &"checkpoint"
 const EVENT := &"event"
 const REJECT := &"reject"
+const TRANSPORT_SELECT := &"transport_select"
+const RTC_OFFER := &"rtc_offer"
+const RTC_ANSWER := &"rtc_answer"
+const RTC_ICE := &"rtc_ice"
+const TRANSPORT_STATUS := &"transport_status"
 
-const CLIENT_MESSAGES: Array[StringName] = [HELLO, JOIN, COMMAND]
-const SERVER_MESSAGES: Array[StringName] = [WELCOME, STATE, CHECKPOINT, EVENT, REJECT]
+const CLIENT_MESSAGES: Array[StringName] = [
+	HELLO, JOIN, COMMAND, TRANSPORT_SELECT, RTC_ANSWER, RTC_ICE,
+]
+const SERVER_MESSAGES: Array[StringName] = [
+	WELCOME, STATE, CHECKPOINT, EVENT, REJECT, RTC_OFFER, RTC_ICE, TRANSPORT_STATUS,
+]
 
 ## Required fields per message type. Every value is a platform field; none names a
 ## game concept. `payload` is required where present but treated as opaque.
@@ -58,6 +66,11 @@ const REQUIRED_FIELDS := {
 	CHECKPOINT: ["pv", "t", "match_id", "tick", "codec_id", "payload", "state_hash"],
 	EVENT: ["pv", "t", "match_id", "tick", "reliability", "codec_id", "payload"],
 	REJECT: ["pv", "t", "code"],
+	TRANSPORT_SELECT: ["pv", "t", "match_id", "attempt_id", "transport"],
+	RTC_OFFER: ["pv", "t", "match_id", "attempt_id", "sdp"],
+	RTC_ANSWER: ["pv", "t", "match_id", "attempt_id", "sdp"],
+	RTC_ICE: ["pv", "t", "match_id", "attempt_id", "media", "index", "candidate"],
+	TRANSPORT_STATUS: ["pv", "t", "match_id", "attempt_id", "transport", "status"],
 }
 
 ## Mandatory match-identity fields carried by the client's opening `hello`. The
@@ -81,6 +94,8 @@ const RELIABILITY_CLASSES: Array[StringName] = [RELIABLE, REPLACEABLE, DROPPABLE
 const MESSAGE_RELIABILITY := {
 	HELLO: RELIABLE, WELCOME: RELIABLE, JOIN: RELIABLE, REJECT: RELIABLE,
 	COMMAND: RELIABLE, CHECKPOINT: RELIABLE, STATE: REPLACEABLE,
+	TRANSPORT_SELECT: RELIABLE, RTC_OFFER: RELIABLE, RTC_ANSWER: RELIABLE,
+	RTC_ICE: RELIABLE, TRANSPORT_STATUS: RELIABLE,
 }
 
 # --- Structured rejection codes ---------------------------------------------
@@ -100,6 +115,7 @@ const REJECT_PAYLOAD_TOO_LARGE := &"payload_too_large"
 const REJECT_SEQUENCE_VIOLATION := &"sequence_violation"
 const REJECT_RATE_LIMITED := &"rate_limited"
 const REJECT_ADAPTER_REJECTED := &"adapter_rejected"
+const REJECT_UNSUPPORTED_TRANSPORT := &"unsupported_transport"
 
 const REJECT_CODES: Array[StringName] = [
 	REJECT_MALFORMED_ENVELOPE, REJECT_UNSUPPORTED_PROTOCOL, REJECT_UNKNOWN_GAME,
@@ -107,6 +123,7 @@ const REJECT_CODES: Array[StringName] = [
 	REJECT_UNKNOWN_MATCH, REJECT_SLOT_UNAVAILABLE, REJECT_UNAUTHORIZED,
 	REJECT_PAYLOAD_TOO_LARGE, REJECT_SEQUENCE_VIOLATION, REJECT_RATE_LIMITED,
 	REJECT_ADAPTER_REJECTED,
+	REJECT_UNSUPPORTED_TRANSPORT,
 ]
 
 # --- Pure envelope validation -----------------------------------------------
