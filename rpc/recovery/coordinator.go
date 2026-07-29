@@ -16,12 +16,15 @@ type Runtime interface {
 }
 
 type CoordinatorConfig struct {
-	MatchID         string
-	CodecID         string
-	Store           Store
-	Runtime         Runtime
-	CheckpointEvery uint64
-	CallTimeout     time.Duration
+	MatchID string
+	CodecID string
+	Store   Store
+	Runtime Runtime
+	// InitialRequestID reserves request ids already consumed while creating the
+	// match before the durable coordinator takes ownership of mutations.
+	InitialRequestID uint64
+	CheckpointEvery  uint64
+	CallTimeout      time.Duration
 }
 
 type RecoveryTelemetry struct {
@@ -55,8 +58,9 @@ func NewCoordinator(cfg CoordinatorConfig) (*Coordinator, error) {
 		cfg.CallTimeout = 5 * time.Second
 	}
 	return &Coordinator{
-		cfg:       cfg,
-		telemetry: RecoveryTelemetry{MatchID: cfg.MatchID},
+		cfg:           cfg,
+		nextRequestID: cfg.InitialRequestID,
+		telemetry:     RecoveryTelemetry{MatchID: cfg.MatchID},
 	}, nil
 }
 
@@ -249,6 +253,7 @@ func (c *Coordinator) ensureRecoveredLocked(ctx context.Context) error {
 	}
 	c.nextRequestID = 0
 	if state.Checkpoint == nil && len(state.Entries) == 0 {
+		c.nextRequestID = c.cfg.InitialRequestID
 		c.activeEpoch = runtimeEpoch
 		c.telemetry.LastStorageBytes = state.StorageBytes
 		return nil
@@ -375,7 +380,11 @@ func (c *Coordinator) replayEntryLocked(ctx context.Context, entry Entry) error 
 			return fail(CodeCorrupt, "durable response is malformed", err)
 		}
 		if metaFromResponse(durableResponse).GetCode() != metaFromResponse(response).GetCode() {
-			return fail(CodeHashMismatch, "replay changed the adapter status", nil)
+			return fail(CodeHashMismatch, fmt.Sprintf(
+				"replay changed the adapter status from %s to %s (%s)",
+				metaFromResponse(durableResponse).GetCode(),
+				metaFromResponse(response).GetCode(),
+				metaFromResponse(response).GetDetail()), nil)
 		}
 		return nil
 	}
@@ -430,10 +439,9 @@ func (c *Coordinator) stateHashLocked(ctx context.Context) (*adapterv1.StateHash
 
 func (c *Coordinator) nextContextLocked(expectedTick uint64) *adapterv1.RequestContext {
 	_, instanceID, epoch := c.cfg.Runtime.RuntimeIdentity()
-	if c.activeEpoch != 0 && c.activeEpoch != epoch {
-		// ensureRecoveredLocked resets the counter before this path is used.
-		c.nextRequestID = 0
-	}
+	// ensureRecoveredLocked resets the sequence once when it observes a new
+	// epoch. Do not reset here: checkpoint restore and every replayed entry run
+	// while activeEpoch still names the prior, successfully recovered epoch.
 	c.nextRequestID++
 	return &adapterv1.RequestContext{
 		Protocol:          &adapterv1.ProtocolVersion{Major: 1, Minor: 0},

@@ -45,3 +45,12 @@ versioned checkpoints, fresh-epoch replay and per-step state-hash verification a
 the supervised runtime. `recovery.Store` is the provider interface and `FileStore` is
 the fsync/rename-based local and CI implementation. See
 [the durable recovery guide](../docs/adapter-durable-recovery.md).
+
+## Non-Godot reference adapter
+
+`reference/counter` is a standalone Go implementation of the counter reference game.
+It depends only on generated Adapter RPC v1 bindings, implements the complete opaque
+lifecycle, preserves Godot-compatible state hashes/replays, supports production mTLS
+and ships with a non-root container. Its black-box fixture starts the real binary
+through `ProcessRuntime`, forces a crash and verifies checkpoint plus journal
+recovery. See the [third-party implementation guide](reference/counter/README.md).
