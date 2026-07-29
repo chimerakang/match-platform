@@ -1,0 +1,127 @@
+{
+  "client": [
+    {
+      "name": "open maps identity and negotiation",
+      "custom": {
+        "op": "open",
+        "versions": [3],
+        "game": "counter-reference",
+        "release": "counter-rules.1",
+        "digest": "counter-content-hash",
+        "formats": ["counter.json.v1"]
+      },
+      "v3": {
+        "pv": 3,
+        "t": "hello",
+        "protocol_versions": [3],
+        "game_id": "counter-reference",
+        "game_version": "counter-rules.1",
+        "content_hash": "counter-content-hash",
+        "codecs": ["counter.json.v1"]
+      }
+    },
+    {
+      "name": "seat carries reconnect identity",
+      "custom": {
+        "op": "seat",
+        "queue": "quick",
+        "role": "participant",
+        "slot": "slot_2",
+        "ticket": "account:7",
+        "resume": "resume:abc"
+      },
+      "v3": {
+        "pv": 3,
+        "t": "join",
+        "match_selector": {"kind": "quick"},
+        "role": "participant",
+        "requested_slot": "slot_2",
+        "auth_context": {
+          "identity": "account:7",
+          "reconnect_token": "resume:abc"
+        }
+      }
+    },
+    {
+      "name": "act keeps game payload opaque",
+      "custom": {
+        "op": "act",
+        "match": "gateway-277",
+        "no": 8,
+        "base": 3,
+        "format": "counter.json.v1",
+        "body": {"action": "increment", "amount": 2}
+      },
+      "v3": {
+        "pv": 3,
+        "t": "command",
+        "match_id": "gateway-277",
+        "seq": 8,
+        "expected_tick": 3,
+        "codec_id": "counter.json.v1",
+        "payload": {"action": "increment", "amount": 2}
+      }
+    }
+  ],
+  "server": [
+    {
+      "name": "replaceable state becomes latest sync",
+      "v3": {
+        "pv": 3,
+        "t": "state",
+        "match_id": "gateway-277",
+        "tick": 4,
+        "base_tick": 3,
+        "seq": 9,
+        "codec_id": "counter.json.v1",
+        "payload": {"replace": {"step": 4}}
+      },
+      "custom": {
+        "op": "sync",
+        "match": "gateway-277",
+        "step": 4,
+        "from": 3,
+        "no": 9,
+        "format": "counter.json.v1",
+        "body": {"replace": {"step": 4}},
+        "delivery": "latest"
+      }
+    },
+    {
+      "name": "droppable event has explicit downgrade",
+      "v3": {
+        "pv": 3,
+        "t": "event",
+        "match_id": "gateway-277",
+        "tick": 4,
+        "reliability": "droppable",
+        "codec_id": "counter.json.v1",
+        "payload": {"kind": "spark"}
+      },
+      "custom": {
+        "op": "notice",
+        "match": "gateway-277",
+        "step": 4,
+        "format": "counter.json.v1",
+        "body": {"kind": "spark"},
+        "delivery": "latest",
+        "downgraded_from": "droppable"
+      }
+    },
+    {
+      "name": "V3 error has stable custom mapping",
+      "v3": {
+        "pv": 3,
+        "t": "reject",
+        "code": "rate_limited",
+        "detail": "admission budget exhausted"
+      },
+      "custom": {
+        "op": "fault",
+        "code": "slow_down",
+        "v3_code": "rate_limited",
+        "detail": "admission budget exhausted"
+      }
+    }
+  ]
+}

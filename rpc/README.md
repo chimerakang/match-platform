@@ -54,3 +54,12 @@ lifecycle, preserves Godot-compatible state hashes/replays, supports production 
 and ships with a non-root container. Its black-box fixture starts the real binary
 through `ProcessRuntime`, forces a crash and verifies checkpoint plus journal
 recovery. See the [third-party implementation guide](reference/counter/README.md).
+
+## Custom protocol gateway
+
+`gateway` provides a game-specific translation seam from an existing wire protocol to
+Client Protocol V3, with envelope/size/rate validation, explicit error and delivery
+mapping, telemetry, golden fixtures and a non-V3 counter sample. Its black-box test
+completes a match through the out-of-process reference adapter without adding custom
+vocabulary to platform core. See the
+[gateway guide](../docs/custom-protocol-gateway.md).
