@@ -37,3 +37,11 @@ restarts a crashed or unresponsive process with a new instance id and epoch.
 Production configuration requires transport credentials and rejects non-loopback
 adapter endpoints. `AllowInsecureTests` exists only for hermetic local fixtures. See
 [the process runtime guide](../docs/adapter-process-runtime.md).
+
+## Durable recovery
+
+`recovery.Coordinator` adds a write-ahead command journal, atomic committed watermark,
+versioned checkpoints, fresh-epoch replay and per-step state-hash verification around
+the supervised runtime. `recovery.Store` is the provider interface and `FileStore` is
+the fsync/rename-based local and CI implementation. See
+[the durable recovery guide](../docs/adapter-durable-recovery.md).
