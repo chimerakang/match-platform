@@ -1,5 +1,5 @@
 class_name InMemoryMatchMetadataStore
-extends MatchMetadataStore
+extends "./match_metadata_store.gd"
 
 var _records: Dictionary = {}
 var _order: Array[String] = []

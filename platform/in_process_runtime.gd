@@ -1,5 +1,5 @@
 class_name InProcessRuntime
-extends AdapterRuntime
+extends "./adapter_runtime.gd"
 
 ## Trusted compatibility runtime around the existing adapter object. It uses the same
 ## result/call boundary as a future process runtime but completes synchronously.

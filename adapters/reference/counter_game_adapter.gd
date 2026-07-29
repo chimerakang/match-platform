@@ -1,5 +1,5 @@
 class_name CounterGameAdapter
-extends MatchGameAdapter
+extends "../../platform/match_game_adapter.gd"
 
 ## Minimal deterministic package used to prove that Match Platform Core can run a
 ## second ruleset while treating every payload as opaque.

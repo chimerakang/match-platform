@@ -1,5 +1,5 @@
 class_name InMemoryAuthIdentityVerifier
-extends AuthIdentityVerifier
+extends "./auth_identity_verifier.gd"
 
 ## Local/CI identity provider. Production can inject another implementation without
 ## changing lobby, session, or adapter code.
