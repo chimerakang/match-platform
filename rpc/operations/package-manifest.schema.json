@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hersir.example/schemas/adapter-package-manifest-v1.json",
+  "title": "Adapter Package Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "package_id", "game_id", "adapter_version",
+    "content_versions", "content_hashes", "codec_ids", "rpc_schema",
+    "artifact", "sandbox", "signer_id", "signature"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "package_id": {"type": "string", "minLength": 1},
+    "game_id": {"type": "string", "minLength": 1},
+    "adapter_version": {"type": "string", "minLength": 1},
+    "content_versions": {
+      "type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}
+    },
+    "content_hashes": {
+      "type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}
+    },
+    "codec_ids": {
+      "type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}
+    },
+    "rpc_schema": {"const": "hersir.adapter.rpc.v1"},
+    "signer_id": {"type": "string", "minLength": 1},
+    "signature": {"type": "string", "minLength": 1},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path", "sha256", "sbom_path", "sbom_sha256",
+        "provenance_path", "provenance_sha256",
+        "vulnerability_path", "vulnerability_sha256"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "sbom_path": {"type": "string", "minLength": 1},
+        "sbom_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "provenance_path": {"type": "string", "minLength": 1},
+        "provenance_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "vulnerability_path": {"type": "string", "minLength": 1},
+        "vulnerability_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "sandbox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_only_root", "network", "no_new_privileges", "capabilities",
+        "writable_paths", "environment", "limits"
+      ],
+      "properties": {
+        "read_only_root": {"const": true},
+        "network": {"const": "loopback-only"},
+        "no_new_privileges": {"const": true},
+        "capabilities": {"type": "array", "maxItems": 0},
+        "writable_paths": {
+          "type": "array", "items": {"enum": ["/tmp"]}, "uniqueItems": true
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpu_millis", "memory_bytes", "max_processes", "max_request_bytes",
+            "max_response_bytes", "queue_capacity"
+          ],
+          "properties": {
+            "cpu_millis": {"type": "integer", "minimum": 10, "maximum": 1000},
+            "memory_bytes": {"type": "integer", "minimum": 16777216},
+            "max_processes": {"type": "integer", "minimum": 1, "maximum": 64},
+            "max_request_bytes": {"type": "integer", "minimum": 1},
+            "max_response_bytes": {"type": "integer", "minimum": 1},
+            "queue_capacity": {"type": "integer", "minimum": 0}
+          }
+        }
+      }
+    }
+  }
+}

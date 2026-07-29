@@ -140,7 +140,10 @@ func (r *ProcessRuntime) startGeneration() error {
 	r.ready = false
 	command := exec.CommandContext(r.rootCtx, r.cfg.Process.Command, r.cfg.Process.Args...)
 	command.Dir = r.cfg.Process.Dir
-	command.Env = append(os.Environ(), r.cfg.Process.Env...)
+	if r.cfg.Process.InheritEnvironment {
+		command.Env = append(command.Env, os.Environ()...)
+	}
+	command.Env = append(command.Env, r.cfg.Process.Env...)
 	command.Env = append(command.Env,
 		"HERSIR_ADAPTER_RPC_ENDPOINT="+r.cfg.Endpoint,
 		"HERSIR_ADAPTER_INSTANCE_ID="+instanceID,

@@ -19,6 +19,14 @@ type ProcessSpec struct {
 	Args    []string
 	Env     []string
 	Dir     string
+	// InheritEnvironment is an insecure local-development escape hatch. The
+	// production default is a clean environment so ambient credentials cannot
+	// cross into a third-party adapter process.
+	InheritEnvironment bool
+	// Sandboxed confirms Command is the trusted default-deny launcher rather
+	// than the adapter artifact itself. Production construction fails closed
+	// unless an operations-verified launch plan owns the process.
+	Sandboxed bool
 }
 
 type RestartPolicy struct {
@@ -121,6 +129,12 @@ func (c Config) validate() error {
 	}
 	if c.Process.Command == "" {
 		return fmt.Errorf("adapter process command is required")
+	}
+	if c.Process.InheritEnvironment && !c.AllowInsecureTests {
+		return fmt.Errorf("production adapter process cannot inherit the host environment")
+	}
+	if !c.Process.Sandboxed && !c.AllowInsecureTests {
+		return fmt.Errorf("production adapter process requires a verified sandbox launcher")
 	}
 	if c.MaxConcurrent <= 0 || c.QueueCapacity < 0 {
 		return fmt.Errorf("invalid concurrency or queue capacity")

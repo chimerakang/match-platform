@@ -63,3 +63,12 @@ mapping, telemetry, golden fixtures and a non-V3 counter sample. Its black-box t
 completes a match through the out-of-process reference adapter without adding custom
 vocabulary to platform core. See the
 [gateway guide](../docs/custom-protocol-gateway.md).
+
+## Package security and rollout
+
+`operations` verifies signed immutable package manifests and their
+artifact/SBOM/provenance/vulnerability evidence, emits a default-deny sandbox launch
+plan, and owns match-stable canary/drain/promotion/rollback plus per-digest audit and
+telemetry. Production `ProcessRuntime` rejects host-environment inheritance and raw
+unsandboxed adapter commands. See the
+[operations runbook](../docs/adapter-package-operations-runbook.md).
