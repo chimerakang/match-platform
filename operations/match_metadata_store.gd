@@ -1,7 +1,7 @@
 class_name MatchMetadataStore
 extends RefCounted
 
-const V3 = preload("res://platform/match_platform_v3.gd")
+const V3 = preload("../platform/match_platform_v3.gd")
 
 ## Gameplay payloads are forbidden here. Durable provider implementations may store
 ## only the operator identity/lifecycle fields defined by this contract.

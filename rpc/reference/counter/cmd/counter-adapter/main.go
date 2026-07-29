@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/chimerakang/hersir/rpc/reference/counter"
+	"github.com/chimerakang/match-platform/rpc/reference/counter"
 )
 
 func main() {

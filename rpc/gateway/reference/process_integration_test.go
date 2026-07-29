@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chimerakang/hersir/rpc/gateway"
-	adapterv1 "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1"
-	counter "github.com/chimerakang/hersir/rpc/reference/counter"
-	rpcruntime "github.com/chimerakang/hersir/rpc/runtime"
+	"github.com/chimerakang/match-platform/rpc/gateway"
+	adapterv1 "github.com/chimerakang/match-platform/rpc/gen/go/adapter/v1"
+	counter "github.com/chimerakang/match-platform/rpc/reference/counter"
+	rpcruntime "github.com/chimerakang/match-platform/rpc/runtime"
 )
 
 func TestNonV3ClientCompletesMatchThroughGatewayAndProcessAdapter(t *testing.T) {

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package hersir.adapter.rpc.v1;
 
-option go_package = "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1;adapterv1";
+option go_package = "github.com/chimerakang/match-platform/rpc/gen/go/adapter/v1;adapterv1";
 
 // Adapter RPC is the language-neutral process boundary for MatchGameAdapter.
 // Game configuration, commands, state, events, results and replay remain opaque bytes.

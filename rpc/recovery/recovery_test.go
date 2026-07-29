@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	adapterv1 "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1"
-	adapterruntime "github.com/chimerakang/hersir/rpc/runtime"
+	adapterv1 "github.com/chimerakang/match-platform/rpc/gen/go/adapter/v1"
+	adapterruntime "github.com/chimerakang/match-platform/rpc/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )

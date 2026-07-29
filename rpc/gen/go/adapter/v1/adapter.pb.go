@@ -2855,7 +2855,7 @@ const file_adapter_v1_adapter_proto_rawDesc = "" +
 	"\vDrainEvents\x12).hersir.adapter.rpc.v1.DrainEventsRequest\x1a*.hersir.adapter.rpc.v1.DrainEventsResponse\x12^\n" +
 	"\n" +
 	"GetMetrics\x12(.hersir.adapter.rpc.v1.GetMetricsRequest\x1a&.hersir.adapter.rpc.v1.MetricsResponse\x12U\n" +
-	"\x06Health\x12$.hersir.adapter.rpc.v1.HealthRequest\x1a%.hersir.adapter.rpc.v1.HealthResponseB?Z=github.com/chimerakang/hersir/rpc/gen/go/adapter/v1;adapterv1b\x06proto3"
+	"\x06Health\x12$.hersir.adapter.rpc.v1.HealthRequest\x1a%.hersir.adapter.rpc.v1.HealthResponseBGZEgithub.com/chimerakang/match-platform/rpc/gen/go/adapter/v1;adapterv1b\x06proto3"
 
 var (
 	file_adapter_v1_adapter_proto_rawDescOnce sync.Once

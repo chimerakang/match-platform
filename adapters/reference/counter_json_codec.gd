@@ -1,7 +1,7 @@
 class_name CounterJsonCodec
 extends RefCounted
 
-const V3 = preload("res://platform/match_platform_v3.gd")
+const V3 = preload("../../platform/match_platform_v3.gd")
 
 
 func delivery_groups(messages: Array) -> Array[Dictionary]:

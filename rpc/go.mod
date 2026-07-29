@@ -1,4 +1,4 @@
-module github.com/chimerakang/hersir/rpc
+module github.com/chimerakang/match-platform/rpc
 
 go 1.23.0
 

@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	adapterv1 "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1"
+	adapterv1 "github.com/chimerakang/match-platform/rpc/gen/go/adapter/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/proto"

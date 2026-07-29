@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	adapterv1 "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1"
+	adapterv1 "github.com/chimerakang/match-platform/rpc/gen/go/adapter/v1"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -19,7 +19,7 @@ bash tests/run_adapter_rpc_conformance.sh
 Probe a running endpoint without decoding any game payload:
 
 ```sh
-HERSIR_RPC_PYTHON=.venv/bin/python \
+MATCH_PLATFORM_RPC_PYTHON=.venv/bin/python \
   python tools/adapter_rpc_probe.py --endpoint 127.0.0.1:50051
 ```
 
@@ -72,11 +72,3 @@ plan, and owns match-stable canary/drain/promotion/rollback plus per-digest audi
 telemetry. Production `ProcessRuntime` rejects host-environment inheritance and raw
 unsandboxed adapter commands. See the
 [operations runbook](../docs/adapter-package-operations-runbook.md).
-
-## Hersir process adapter
-
-`hersir` exposes the existing Godot `HersirGameAdapter` through the same Adapter
-RPC v1 runtime. Its black-box gate compares hash/result/replay with an in-process
-oracle, forces a process crash, verifies durable recovery, and enforces an RPC
-latency budget. See the [package guide](hersir/README.md) and
-[release gate](../docs/hersir-process-rpc.md).

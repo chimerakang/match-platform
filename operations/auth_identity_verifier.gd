@@ -7,7 +7,7 @@ extends RefCounted
 ## product-auth fields from `join.auth_context` and server-owned request context;
 ## successful implementations return a stable subject plus non-secret claims.
 
-const V3 = preload("res://platform/match_platform_v3.gd")
+const V3 = preload("../platform/match_platform_v3.gd")
 
 
 func verify(_auth_context: Dictionary, _request_context: Dictionary = {}) -> Dictionary:

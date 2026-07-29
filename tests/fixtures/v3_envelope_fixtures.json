@@ -1,0 +1,176 @@
+{
+  "_comment": [
+    "Match Platform V3 reference envelope fixtures (issue #74, ADR 0003).",
+    "The example game is the FICTIONAL 'gridwars' with generic slot ids and an",
+    "opaque payload. No Hersir field (blue/red, hero, unit, stronghold, move,",
+    "recruit, cast_skill, hire_merc, map hash) appears anywhere in a platform",
+    "envelope — that absence IS the contract. `payload` blobs are illustrative",
+    "opaque game data the platform never inspects. tests/v3_contract_test.gd",
+    "validates `valid` against MatchPlatformV3.validate_envelope and asserts each",
+    "`invalid` case yields exactly its `expect_code`."
+  ],
+  "envelope_version": 3,
+  "valid": {
+    "hello": {
+      "pv": 3,
+      "t": "hello",
+      "protocol_versions": [3],
+      "game_id": "gridwars",
+      "game_version": "1.4.0",
+      "content_hash": "sha256:9f2c0a",
+      "codecs": ["gridwars.binary.1", "reference.json.1"]
+    },
+    "welcome": {
+      "pv": 3,
+      "t": "welcome",
+      "selected_protocol": 3,
+      "game_id": "gridwars",
+      "adapter_version": "1.4.0",
+      "selected_codec": "gridwars.binary.1",
+      "tick_rate": 60,
+      "capabilities": {
+        "reconnect": true,
+        "resync": true,
+        "max_envelope_bytes": 65536,
+        "delivery_classes": ["reliable", "replaceable", "droppable"]
+      }
+    },
+    "join": {
+      "pv": 3,
+      "t": "join",
+      "match_selector": {"kind": "quick"},
+      "role": "player",
+      "requested_slot": "north",
+      "auth_context": {"identity": "session:7a1c", "reconnect_token": "r-93ff"}
+    },
+    "command": {
+      "pv": 3,
+      "t": "command",
+      "match_id": "m-0042",
+      "seq": 118,
+      "expected_tick": 900,
+      "codec_id": "gridwars.binary.1",
+      "payload": {"op": "place", "cell": 214, "piece": 3}
+    },
+    "state": {
+      "pv": 3,
+      "t": "state",
+      "match_id": "m-0042",
+      "tick": 906,
+      "base_tick": 900,
+      "seq": 5521,
+      "codec_id": "gridwars.binary.1",
+      "payload": "b64:AAECAwQ="
+    },
+    "checkpoint": {
+      "pv": 3,
+      "t": "checkpoint",
+      "match_id": "m-0042",
+      "tick": 900,
+      "codec_id": "gridwars.binary.1",
+      "payload": "b64:ZnVsbC1zdGF0ZQ==",
+      "state_hash": "3b1f9ad0c4e57721"
+    },
+    "event": {
+      "pv": 3,
+      "t": "event",
+      "match_id": "m-0042",
+      "tick": 903,
+      "reliability": "droppable",
+      "codec_id": "gridwars.binary.1",
+      "payload": {"fx": "capture", "cell": 214}
+    },
+    "reject": {
+      "pv": 3,
+      "t": "reject",
+      "code": "slot_unavailable",
+      "detail": "slot 'north' already seated"
+    },
+    "transport_select": {
+      "pv": 3,
+      "t": "transport_select",
+      "match_id": "m-0042",
+      "attempt_id": "rtc-1",
+      "transport": "webrtc"
+    },
+    "rtc_offer": {
+      "pv": 3,
+      "t": "rtc_offer",
+      "match_id": "m-0042",
+      "attempt_id": "rtc-1",
+      "sdp": "v=0\\r\\n"
+    },
+    "rtc_answer": {
+      "pv": 3,
+      "t": "rtc_answer",
+      "match_id": "m-0042",
+      "attempt_id": "rtc-1",
+      "sdp": "v=0\\r\\n"
+    },
+    "rtc_ice": {
+      "pv": 3,
+      "t": "rtc_ice",
+      "match_id": "m-0042",
+      "attempt_id": "rtc-1",
+      "media": "0",
+      "index": 0,
+      "candidate": "candidate:reference"
+    },
+    "transport_status": {
+      "pv": 3,
+      "t": "transport_status",
+      "match_id": "m-0042",
+      "attempt_id": "rtc-1",
+      "transport": "webrtc-direct",
+      "status": "open"
+    }
+  },
+  "invalid": [
+    {
+      "why": "wrong platform version → refused as unsupported_protocol",
+      "allowed": "server",
+      "envelope": {"pv": 2, "t": "welcome", "selected_protocol": 3, "game_id": "gridwars", "adapter_version": "1.4.0", "selected_codec": "gridwars.binary.1", "tick_rate": 60, "capabilities": {}},
+      "expect_code": "unsupported_protocol"
+    },
+    {
+      "why": "missing mandatory identity field content_hash in hello",
+      "allowed": "client",
+      "envelope": {"pv": 3, "t": "hello", "protocol_versions": [3], "game_id": "gridwars", "game_version": "1.4.0", "codecs": ["reference.json.1"]},
+      "expect_code": "malformed_envelope"
+    },
+    {
+      "why": "command missing opaque payload field",
+      "allowed": "client",
+      "envelope": {"pv": 3, "t": "command", "match_id": "m-0042", "seq": 1, "expected_tick": 10, "codec_id": "gridwars.binary.1"},
+      "expect_code": "malformed_envelope"
+    },
+    {
+      "why": "event declares an unknown delivery class",
+      "allowed": "server",
+      "envelope": {"pv": 3, "t": "event", "match_id": "m-0042", "tick": 903, "reliability": "urgent", "codec_id": "gridwars.binary.1", "payload": {}},
+      "expect_code": "malformed_envelope"
+    },
+    {
+      "why": "reject carries a code outside the frozen set",
+      "allowed": "server",
+      "envelope": {"pv": 3, "t": "reject", "code": "because_i_said_so"},
+      "expect_code": "malformed_envelope"
+    },
+    {
+      "why": "client sends a server-only message type",
+      "allowed": "client",
+      "envelope": {"pv": 3, "t": "state", "match_id": "m-0042", "tick": 906, "base_tick": 900, "seq": 1, "codec_id": "gridwars.binary.1", "payload": "b64:AA=="},
+      "expect_code": "malformed_envelope"
+    }
+  ],
+  "negotiation": {
+    "protocol": [
+      {"why": "highest common wins", "client": [1, 2, 3], "server": [3], "expect": 3},
+      {"why": "no overlap → 0 (unsupported_protocol)", "client": [1, 2], "server": [3], "expect": 0}
+    ],
+    "codec": [
+      {"why": "first client-preferred the adapter also offers", "client": ["gridwars.binary.1", "reference.json.1"], "adapter": ["reference.json.1", "gridwars.binary.1"], "expect": "gridwars.binary.1"},
+      {"why": "disjoint → '' (unsupported_codec)", "client": ["gridwars.binary.1"], "adapter": ["reference.json.1"], "expect": ""}
+    ]
+  }
+}

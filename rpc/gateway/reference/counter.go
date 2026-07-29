@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/chimerakang/hersir/rpc/gateway"
+	"github.com/chimerakang/match-platform/rpc/gateway"
 )
 
 // CounterTranslator demonstrates a deliberately non-V3 game protocol. Its

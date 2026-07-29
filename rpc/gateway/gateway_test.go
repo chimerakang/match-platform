@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/chimerakang/hersir/rpc/gateway"
+	"github.com/chimerakang/match-platform/rpc/gateway"
 )
 
 type alternateTranslator struct{}

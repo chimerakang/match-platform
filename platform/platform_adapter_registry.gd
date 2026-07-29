@@ -20,8 +20,8 @@ extends RefCounted
 ## registry compares for equality and nothing more. See ADR 0003 §5 for negotiation
 ## and `docs/match-platform-core.md` for how the core consumes this.
 
-const V3 = preload("res://platform/match_platform_v3.gd")
-const LocalRuntime = preload("res://platform/in_process_runtime.gd")
+const V3 = preload("./match_platform_v3.gd")
+const LocalRuntime = preload("./in_process_runtime.gd")
 
 ## Platform envelope versions this build speaks, newest first. Negotiation picks the
 ## highest value shared with the client (`unsupported_protocol` when disjoint). This

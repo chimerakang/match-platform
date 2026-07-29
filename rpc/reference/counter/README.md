@@ -3,8 +3,8 @@
 This package is a complete, deterministic Adapter RPC v1 server written in Go. It
 implements the same neutral counter game as
 `adapters/reference/counter_game_adapter.gd`, but runs in a separate process and
-has no Godot, Hersir game, platform-core or platform-runtime dependency. Its only
-Hersir-repository import is the generated, language-neutral protobuf binding.
+has no Godot, downstream game, platform-core or platform-runtime dependency. Its
+only platform import is the generated, language-neutral protobuf binding.
 
 The fixture proves that an adapter can be implemented in another language or engine
 without changing Client Protocol V3 or teaching platform core any game vocabulary.

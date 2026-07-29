@@ -6,7 +6,7 @@ extends RefCounted
 ## This module is the executable form of ADR 0003. It defines the generic,
 ## game-agnostic envelope that the platform core speaks and a pure validator for
 ## it. The platform NEVER inspects `payload`: it is an opaque, adapter-owned blob
-## that the core only bounds by size and routes by envelope class. No Hersir
+## that the core only bounds by size and routes by envelope class. No game
 ## vocabulary — seat names, entity kinds, command names, terrain fields, mode
 ## selectors — may appear in this file or in any message the core validates; that is
 ## the non-negotiable boundary from #73, enforced by `tests/platform_core_test.gd`.

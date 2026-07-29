@@ -42,7 +42,7 @@ func metrics(arena_telemetry: Array) -> Dictionary:
 				platform[field] = source[field]
 		matches.append({
 			"match_id": String(source.get("match_id",
-				"hersir:%d" % int(source.get("arena_id", 0)))),
+				"match:%d" % int(source.get("arena_id", 0)))),
 			"game_id": String(source.get("game_id", "")),
 			"adapter_version": String(source.get("adapter_version", "")),
 			"platform": platform,

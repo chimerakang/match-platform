@@ -5,9 +5,9 @@ extends RefCounted
 ## The active set is projected through PlatformAdapterRegistry for every negotiation,
 ## preserving the frozen pre-seat contract without teaching the core rollout policy.
 
-const V3 = preload("res://platform/match_platform_v3.gd")
-const RuntimeRegistry = preload("res://platform/platform_adapter_registry.gd")
-const LocalRuntime = preload("res://platform/in_process_runtime.gd")
+const V3 = preload("../platform/match_platform_v3.gd")
+const RuntimeRegistry = preload("../platform/platform_adapter_registry.gd")
+const LocalRuntime = preload("../platform/in_process_runtime.gd")
 
 var _packages: Dictionary = {}
 var _active: Dictionary = {}

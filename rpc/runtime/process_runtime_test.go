@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	adapterv1 "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1"
+	adapterv1 "github.com/chimerakang/match-platform/rpc/gen/go/adapter/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -486,7 +486,7 @@ func mutualTLSFixture(t *testing.T) (credentials.TransportCredentials, []string)
 	now := time.Now()
 	caTemplate := &x509.Certificate{
 		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{CommonName: "Hersir runtime test CA"},
+		Subject:               pkix.Name{CommonName: "Match Platform runtime test CA"},
 		NotBefore:             now.Add(-time.Minute),
 		NotAfter:              now.Add(time.Hour),
 		IsCA:                  true,

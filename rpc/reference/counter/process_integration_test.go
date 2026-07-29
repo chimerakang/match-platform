@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	adapterv1 "github.com/chimerakang/hersir/rpc/gen/go/adapter/v1"
-	"github.com/chimerakang/hersir/rpc/recovery"
-	rpcruntime "github.com/chimerakang/hersir/rpc/runtime"
+	adapterv1 "github.com/chimerakang/match-platform/rpc/gen/go/adapter/v1"
+	"github.com/chimerakang/match-platform/rpc/recovery"
+	rpcruntime "github.com/chimerakang/match-platform/rpc/runtime"
 )
 
 func TestProcessRuntimeFullLifecycleAndForcedRestartRecovery(t *testing.T) {
