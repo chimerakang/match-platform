@@ -20,13 +20,13 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: rpc/go.mod
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
       - name: Run cross-language and process acceptance
         run: |
-          python -m pip install -r rpc/conformance/python/requirements.txt
-          MATCH_PLATFORM_RPC_PYTHON=python bash tests/run_adapter_rpc_conformance.sh
+          python3 -m venv "$RUNNER_TEMP/match-platform-python"
+          "$RUNNER_TEMP/match-platform-python/bin/pip" install \
+            -r rpc/conformance/python/requirements.txt
+          MATCH_PLATFORM_RPC_PYTHON="$RUNNER_TEMP/match-platform-python/bin/python" \
+            bash tests/run_adapter_rpc_conformance.sh
       - name: Prove standalone reference dependency closure
         run: |
           cd rpc
@@ -38,7 +38,7 @@ jobs:
       - name: Build immutable source, SBOM and provenance
         run: |
           version="${GITHUB_REF_NAME:-candidate}"
-          python tools/build_release_artifacts.py \
+          python3 tools/build_release_artifacts.py \
             --output "$RUNNER_TEMP/match-platform-artifacts" --version "$version"
       - uses: actions/upload-artifact@v4
         with:
