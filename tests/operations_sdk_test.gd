@@ -39,6 +39,8 @@ func _run() -> void:
 	_check(bool(metadata.upsert({
 		"match_id": "counter:1", "game_id": Reference.GAME_ID,
 		"adapter_version": Reference.ADAPTER_VERSION,
+		"content_version": Reference.CONTENT_VERSION,
+		"content_hash": adapter.content_hash(),
 		"status": "running",
 	}).get("ok", false)), "match metadata is stored")
 	var service := Operations.new(packages, metadata)

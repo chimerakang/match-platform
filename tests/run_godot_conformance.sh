@@ -4,6 +4,8 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 command -v godot >/dev/null
 
+godot --headless --path "$root" --import >/dev/null
+
 for test_name in platform_core_test v3_contract_test reference_game_adapter_test operations_sdk_test; do
   log_file="$(mktemp)"
   godot --headless --path "$root" --script "res://tests/${test_name}.gd" 2>&1 | tee "$log_file"
