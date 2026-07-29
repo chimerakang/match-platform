@@ -88,6 +88,9 @@ func TestAdapterProcessHelper(t *testing.T) {
 	if os.Getenv("HERSIR_RUNTIME_TEST_HELPER") != "1" {
 		return
 	}
+	if os.Getenv("HERSIR_RUNTIME_TEST_AMBIENT_SECRET") != "" {
+		t.Fatal("adapter inherited an ambient host secret")
+	}
 	epoch, err := strconv.ParseUint(os.Getenv("HERSIR_ADAPTER_EPOCH"), 10, 64)
 	if err != nil {
 		t.Fatal(err)
@@ -440,6 +443,24 @@ func TestProcessRuntimeEnforcesLocalIdentityBoundary(t *testing.T) {
 	if _, err := NewProcessRuntime(cfg); err == nil {
 		t.Fatal("runtime without mTLS credentials was accepted")
 	}
+	cfg.Credentials = credentials.NewTLS(&tls.Config{MinVersion: tls.VersionTLS13})
+	cfg.WorkloadIdentity = "spiffe://hersir.test/platform"
+	cfg.Process.InheritEnvironment = true
+	if _, err := NewProcessRuntime(cfg); err == nil {
+		t.Fatal("production runtime accepted ambient environment inheritance")
+	}
+	cfg.Process.InheritEnvironment = false
+	if _, err := NewProcessRuntime(cfg); err == nil {
+		t.Fatal("production runtime accepted a raw unsandboxed adapter command")
+	}
+}
+
+func TestProcessRuntimeScrubsAmbientEnvironment(t *testing.T) {
+	t.Setenv("HERSIR_RUNTIME_TEST_AMBIENT_SECRET", "must-not-cross-boundary")
+	runtime := startTestRuntime(t, testConfig(t, "clean-environment"))
+	if _, err := runtime.Health(context.Background(), healthRequest()); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestProcessRuntimeMutualTLSWorkloadIdentity(t *testing.T) {
@@ -448,6 +469,7 @@ func TestProcessRuntimeMutualTLSWorkloadIdentity(t *testing.T) {
 	cfg.AllowInsecureTests = false
 	cfg.Credentials = clientCredentials
 	cfg.WorkloadIdentity = "spiffe://hersir.test/match-platform"
+	cfg.Process.Sandboxed = true
 	cfg.Process.Env = append(cfg.Process.Env, helperEnvironment...)
 	runtime := startTestRuntime(t, cfg)
 	if _, err := runtime.Health(context.Background(), healthRequest()); err != nil {
