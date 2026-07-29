@@ -22,6 +22,8 @@ extends RefCounted
 
 const V3 = preload("./match_platform_v3.gd")
 const LocalRuntime = preload("./in_process_runtime.gd")
+const AdapterRuntime = preload("./adapter_runtime.gd")
+const AdapterRuntimeCall = preload("./adapter_runtime_call.gd")
 
 ## Platform envelope versions this build speaks, newest first. Negotiation picks the
 ## highest value shared with the client (`unsupported_protocol` when disjoint). This

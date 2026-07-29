@@ -1,6 +1,9 @@
 class_name PlatformRuntimeRoom
 extends RefCounted
 
+const AdapterRuntime = preload("./adapter_runtime.gd")
+const AdapterRuntimeCall = preload("./adapter_runtime_call.gd")
+
 ## Minimal execution owner shared by local and future process runtimes. It assigns
 ## monotonic request ids and never branches on the concrete runtime or opaque values.
 

@@ -8,6 +8,8 @@ extends RefCounted
 const V3 = preload("../platform/match_platform_v3.gd")
 const RuntimeRegistry = preload("../platform/platform_adapter_registry.gd")
 const LocalRuntime = preload("../platform/in_process_runtime.gd")
+const AdapterRuntime = preload("../platform/adapter_runtime.gd")
+const PlatformAdapterRegistry = preload("../platform/platform_adapter_registry.gd")
 
 var _packages: Dictionary = {}
 var _active: Dictionary = {}

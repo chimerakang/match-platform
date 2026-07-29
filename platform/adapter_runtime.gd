@@ -1,6 +1,8 @@
 class_name AdapterRuntime
 extends RefCounted
 
+const AdapterRuntimeCall = preload("./adapter_runtime_call.gd")
+
 ## Game-agnostic execution boundary for local and process adapters (#273).
 ## Runtime success and adapter-owned values are separate: `{ok: true, value}` means
 ## the invocation completed, while `value` may itself be an adapter rejection.
