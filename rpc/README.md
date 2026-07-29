@@ -25,3 +25,15 @@ HERSIR_RPC_PYTHON=.venv/bin/python \
 
 The normative versioning, ordering, retry, deadline, limit and canonical-encoding rules
 are in [ADR 0005](../docs/adr/0005-adapter-rpc-v1.md).
+
+## Supervised process runtime
+
+`runtime.ProcessRuntime` implements the complete generated `AdapterServiceClient`
+surface and the platform-owned `runtime.AdapterRuntime` lifecycle. It starts one
+adapter process per failure domain, waits for RPC health readiness, applies bounded
+concurrency and queues, enforces deadlines and uncompressed protobuf limits, and
+restarts a crashed or unresponsive process with a new instance id and epoch.
+
+Production configuration requires transport credentials and rejects non-loopback
+adapter endpoints. `AllowInsecureTests` exists only for hermetic local fixtures. See
+[the process runtime guide](../docs/adapter-process-runtime.md).
