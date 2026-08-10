@@ -374,20 +374,22 @@ Existing docs: this overview, [integration-guide.md](integration-guide.md),
 [source-attribution.md](source-attribution.md), and ADRs
 [0003](adr/0003-match-platform-v3-contract.md) / [0005](adr/0005-adapter-rpc-v1.md).
 
-Gaps worth filling next (largest first):
+Recently filled:
 
-1. **No doc for the GDScript platform core mechanics** — the
-   session/slot/room/queue/ring/delivery/scheduler books are only described by
-   their tests. ADR 0003 §9 references `docs/match-platform-core.md` and
-   `docs/match-platform-extraction-roadmap.md`, which **do not exist** (dangling
-   links).
-2. **No doc for the `AdapterRuntime` seam / `PlatformRuntimeRoom` (#273)** on the
-   GDScript side — it is only described from the Go process-runtime angle.
-3. **No doc for the `operations/` GDScript SDK** — game package registry,
-   operations service, metadata store, auth verifier (only the Go `rpc/operations`
-   runbook exists).
-4. Minor: no ADR index; no per-`codec` authoring note; the RPC `.proto` itself is
-   the only description of several message shapes.
+- [match-platform-core.md](match-platform-core.md) — the GDScript core mechanics
+  (session/slot/room/queue/ring/delivery/scheduler + registry).
+- [adapter-runtime-seam.md](adapter-runtime-seam.md) — the `AdapterRuntime` /
+  `PlatformRuntimeRoom` seam (#273) on the GDScript side.
+- [operations-sdk.md](operations-sdk.md) — the `operations/` GDScript SDK.
+- [match-platform-extraction-roadmap.md](match-platform-extraction-roadmap.md) —
+  extraction status; resolves the previously-dangling ADR 0003 §9 links.
+
+Still open (minor):
+
+1. No ADR index page.
+2. No per-`codec` authoring note (codecs are shown only by the reference
+   examples).
+3. Several out-of-process message shapes are described only by the RPC `.proto`.
 
 ## Glossary
 
