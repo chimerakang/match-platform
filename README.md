@@ -15,6 +15,13 @@ repositories or in a first-party `games/<name>/` directory. The platform core
 still builds and runs without any game source; game code never leaks into
 `platform/` (enforced by `tests/platform_core_test.gd`).
 
+## Architecture
+
+**[docs/architecture.md](docs/architecture.md)** is the system overview — the
+game-agnostic core boundary, the dual in-process/out-of-process adapter runtimes,
+the core mechanics and operations control plane, key data flows, the five version
+axes, and a documentation gap list.
+
 ## Building a game on the platform
 
 Start with **[docs/integration-guide.md](docs/integration-guide.md)** — the
