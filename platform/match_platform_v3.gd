@@ -23,6 +23,22 @@ extends RefCounted
 ## game or codec is not.
 const ENVELOPE_VERSION := 3
 
+## Repository release version. Its SemVer major is deliberately identical to
+## ENVELOPE_VERSION: a Client Protocol V3 frontend consumes Match Platform 3.x.
+## Minor and patch releases must remain compatible with the same V3 envelope.
+const PLATFORM_VERSION := "3.0.0"
+const PLATFORM_VERSION_MAJOR := 3
+const WEBSOCKET_SUBPROTOCOL := "match-platform.v%d" % PLATFORM_VERSION_MAJOR
+
+## True when a Match Platform SemVer belongs to this protocol generation.
+## This intentionally checks the major only; compatible fixes and capabilities
+## may ship as 3.x without forcing coordinated client/server deployment.
+static func supports_platform_version(version: String) -> bool:
+	var parts := version.trim_prefix("v").split(".")
+	return parts.size() == 3 and parts[0].is_valid_int() \
+		and parts[1].is_valid_int() and parts[2].is_valid_int() \
+		and int(parts[0]) == PLATFORM_VERSION_MAJOR
+
 ## Maximum decoded envelope size the core will accept, payload included. The core
 ## bounds the payload by bytes only; it never parses inside it. Mirrors the legacy
 ## v1/v2 wire ceiling so a V3 frame rides the same transport limits during

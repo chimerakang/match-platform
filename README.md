@@ -2,6 +2,9 @@
 
 Engine-neutral contracts and runtimes for authoritative multiplayer games.
 
+Current release line: **Match Platform 3.x**, paired with **Client Protocol V3**.
+The canonical full release version is stored in [`VERSION`](VERSION).
+
 This repository owns:
 
 - Client Protocol V3 envelopes and the Godot platform core;

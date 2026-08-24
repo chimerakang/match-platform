@@ -51,8 +51,8 @@ Every V3 message is one dictionary carrying `pv` (=3) and `t` (type). Direction 
 server→client. Fields below are all **platform** fields; none names a game concept.
 
 ```text
-hello      { pv, protocol_versions, game_id, game_version, content_hash, codecs }
-welcome    { pv, selected_protocol, game_id, adapter_version, selected_codec, tick_rate, capabilities }
+hello      { pv, protocol_versions, platform_version?, game_id, game_version, content_hash, codecs }
+welcome    { pv, selected_protocol, platform_version?, game_id, adapter_version, selected_codec, tick_rate, capabilities }
 join       { pv, match_selector, role, requested_slot?, auth_context }
 command    { pv, match_id, seq, expected_tick, codec_id, payload:opaque }
 state      { pv, match_id, tick, base_tick, seq, codec_id, payload:opaque }

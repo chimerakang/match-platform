@@ -43,6 +43,7 @@ func _run() -> void:
 		quit(1)
 		return
 	_test_valid_envelopes(fixtures)
+	_test_release_version()
 	_test_invalid_envelopes(fixtures)
 	_test_negotiation(fixtures)
 	_test_delivery_classes(fixtures)
@@ -57,6 +58,17 @@ func _run() -> void:
 		for failure in failures:
 			print(" - %s" % failure)
 		quit(1)
+
+func _test_release_version() -> void:
+	var release_version := FileAccess.get_file_as_string("res://VERSION").strip_edges()
+	_check(release_version == V3.PLATFORM_VERSION,
+		"VERSION matches the executable platform version")
+	_check(V3.PLATFORM_VERSION_MAJOR == V3.ENVELOPE_VERSION,
+		"Match Platform major matches the Client Protocol major")
+	_check(V3.supports_platform_version("3.0.0"), "same-major platform release is compatible")
+	_check(V3.supports_platform_version("v3.9.7"), "v-prefixed same-major release is compatible")
+	_check(not V3.supports_platform_version("4.0.0"), "next-major platform release is incompatible")
+	_check(not V3.supports_platform_version("3.0"), "non-SemVer platform release is invalid")
 
 func _load_fixtures() -> Dictionary:
 	var text := FileAccess.get_file_as_string(FIXTURES_PATH)

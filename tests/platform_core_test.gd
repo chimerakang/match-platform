@@ -283,6 +283,7 @@ func _hello(overrides: Dictionary = {}) -> Dictionary:
 	var packet := {
 		"pv": V3.ENVELOPE_VERSION, "t": String(V3.HELLO),
 		"protocol_versions": [V3.ENVELOPE_VERSION], "game_id": "gridwars",
+		"platform_version": V3.PLATFORM_VERSION,
 		"game_version": "1.0.0", "content_hash": GridWarsAdapter.CONTENT_HASH,
 		"codecs": ["gw-binary", "gw-json"],
 	}
@@ -314,6 +315,9 @@ func _test_pre_seat_identity_gate() -> void:
 		var outcome := registry.resolve_hello(cases[expected])
 		_check(not bool(outcome.get("ok", false)) and String(outcome.get("code", "")) == String(expected),
 			"hello is refused with '%s'" % expected)
+	var incompatible_platform := registry.resolve_hello(_hello({"platform_version": "4.0.0"}))
+	_check(String(incompatible_platform.get("code", "")) == String(V3.REJECT_UNSUPPORTED_PROTOCOL),
+		"hello from a different Match Platform major is refused pre-seat")
 
 	# Structural failures are still structural: a hello missing a mandatory identity
 	# field never reaches negotiation.
@@ -333,6 +337,8 @@ func _test_welcome_negotiation() -> void:
 	_check(bool(V3.validate_envelope(welcome, V3.SERVER_MESSAGES).get("ok", false)),
 		"welcome_for builds a contract-valid welcome envelope")
 	_check(String(welcome.get("adapter_version", "")) == "0.1.0", "welcome carries the adapter version")
+	_check(String(welcome.get("platform_version", "")) == V3.PLATFORM_VERSION,
+		"welcome identifies the server Match Platform release")
 	_check(bool(welcome.get("capabilities", {}).get("resync", false)),
 		"capabilities are platform-declared, not game-declared")
 	var refusal := registry.welcome_for(_hello({"game_id": "nosuchgame"}))

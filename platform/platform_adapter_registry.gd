@@ -144,6 +144,11 @@ func resolve_hello(hello: Dictionary) -> Dictionary:
 	var selected_protocol := V3.negotiate_protocol(client_protocols, SUPPORTED_PROTOCOLS)
 	if selected_protocol == 0:
 		return _refuse(V3.REJECT_UNSUPPORTED_PROTOCOL, "no shared platform protocol version")
+	var client_platform_version := String(hello.get("platform_version", ""))
+	if not client_platform_version.is_empty() \
+		and not V3.supports_platform_version(client_platform_version):
+		return _refuse(V3.REJECT_UNSUPPORTED_PROTOCOL,
+			"client Match Platform major does not match Client Protocol V%d" % selected_protocol)
 
 	var game_id := String(hello.get("game_id", ""))
 	if not _packages.has(game_id):
@@ -184,6 +189,7 @@ func welcome_for(hello: Dictionary, capabilities: Dictionary = {}) -> Dictionary
 		return V3.reject(StringName(resolved.get("code", V3.REJECT_MALFORMED_ENVELOPE)), String(resolved.get("detail", "")))
 	return V3.envelope(V3.WELCOME, {
 		"selected_protocol": int(resolved.selected_protocol),
+		"platform_version": V3.PLATFORM_VERSION,
 		"game_id": String(resolved.game_id),
 		"adapter_version": String(resolved.adapter_version),
 		"selected_codec": String(resolved.selected_codec),
