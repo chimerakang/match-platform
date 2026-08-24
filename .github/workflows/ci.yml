@@ -20,6 +20,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: rpc/go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Run cross-language and process acceptance
         run: |
           python3 -m venv "$RUNNER_TEMP/match-platform-python"
