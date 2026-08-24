@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import tarfile
 import tempfile
@@ -22,18 +23,22 @@ def main() -> None:
     parser.add_argument("--version", required=True)
     args = parser.parse_args()
 
+    version = re.sub(r"[^A-Za-z0-9._-]+", "-", args.version).strip(".-")
+    if not version:
+        raise SystemExit("version must contain at least one filename-safe character")
+
     root = Path(__file__).resolve().parents[1]
     commit = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=root, text=True
     ).strip()
     args.output.mkdir(parents=True, exist_ok=True)
-    archive = args.output / f"match-platform-{args.version}.tar.gz"
+    archive = args.output / f"match-platform-{version}.tar.gz"
 
     with tempfile.TemporaryDirectory() as temporary:
         source_tar = Path(temporary) / "source.tar"
         with source_tar.open("wb") as stream:
             subprocess.run(
-                ["git", "archive", "--format=tar", f"--prefix=match-platform-{args.version}/", "HEAD"],
+                ["git", "archive", "--format=tar", f"--prefix=match-platform-{version}/", "HEAD"],
                 cwd=root,
                 stdout=stream,
                 check=True,
@@ -53,8 +58,8 @@ def main() -> None:
         "spdxVersion": "SPDX-2.3",
         "dataLicense": "CC0-1.0",
         "SPDXID": "SPDXRef-DOCUMENT",
-        "name": f"match-platform-{args.version}",
-        "documentNamespace": f"https://github.com/chimerakang/match-platform/releases/{args.version}/{commit}",
+        "name": f"match-platform-{version}",
+        "documentNamespace": f"https://github.com/chimerakang/match-platform/releases/{version}/{commit}",
         "creationInfo": {
             "creators": ["Tool: match-platform-release-builder"],
         },
@@ -62,7 +67,7 @@ def main() -> None:
             {
                 "name": "match-platform",
                 "SPDXID": "SPDXRef-Package",
-                "versionInfo": args.version,
+                "versionInfo": version,
                 "downloadLocation": "NOASSERTION",
                 "filesAnalyzed": False,
                 "checksums": [
@@ -81,7 +86,7 @@ def main() -> None:
         "predicate": {
             "buildDefinition": {
                 "buildType": "https://github.com/chimerakang/match-platform/.github/workflows/ci.yml",
-                "externalParameters": {"version": args.version},
+                "externalParameters": {"version": version},
                 "resolvedDependencies": [
                     {
                         "uri": "git+https://github.com/chimerakang/match-platform",
